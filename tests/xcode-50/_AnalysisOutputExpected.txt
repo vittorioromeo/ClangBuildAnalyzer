@@ -1,0 +1,21 @@
+**** Time summary:
+Compilation (1 times):
+  Parsing (frontend):            2.7 s
+  Codegen & opts (backend):      0.1 s
+
+**** Files that took longest to parse (compiler frontend):
+  2733 ms: tests/xcode-50/test.json
+
+**** Files that took longest to codegen (compiler backend):
+    50 ms: tests/xcode-50/test.json
+
+**** Functions that took longest to compile:
+     0 ms: -[AppDelegate application:didFinishLaunchingWithOptions:] (/Users/revolt/Downloads/ClangBuildAnalyzerTest/ClangBuildAnalyzerTest/AppDelegate.m)
+     0 ms: -[AppDelegate application:configurationForConnectingSceneSession:op... (/Users/revolt/Downloads/ClangBuildAnalyzerTest/ClangBuildAnalyzerTest/AppDelegate.m)
+
+**** Function sets that took longest to compile / optimize:
+
+*** Expensive headers:
+2724 ms: /Users/revolt/Downloads/ClangBuildAnalyzerTest/ClangBuildAnalyzerTest/AppDelegate.h (included 1 times, avg 2724 ms), included via:
+  test.json  (2724 ms)
+

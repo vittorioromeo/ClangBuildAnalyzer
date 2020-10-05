@@ -336,6 +336,10 @@ struct BuildEventsParser
                     ;
                 else if (StrEqual(name, "RunLoopPass"))
                     ;
+                else if (StrEqual(name, "Module Load"))
+                    ;
+                else if (StrEqual(name, "LOPlugin") || StrEqual(name, "LOPluginMain")) // rare; LibreOffice toolchain specific
+                    ;
                 else if (StartsWith(name, "Total ", 6)) // ignore "Total XYZ" events
                     ;
                 else
