@@ -1,6 +1,7 @@
 // Clang Build Analyzer https://github.com/aras-p/ClangBuildAnalyzer
 // SPDX-License-Identifier: Unlicense
 
+#include <iostream>
 #ifdef _MSC_VER
 struct IUnknown; // workaround for old Win SDK header failures when using /permissive-
 #endif
@@ -87,6 +88,8 @@ struct Analysis
     {
         int count = 0;
         int64_t us = 0;
+        DetailIndex file;
+        std::unordered_map<int, int> templateCount;
     };
     struct FileEntry
     {
@@ -136,7 +139,6 @@ DetailIndex Analysis::FindPath(EventIndex eventIndex) const
     while(eventIndex > EventIndex())
     {
         const BuildEvent& ev = events[eventIndex];
-        if (ev.type == BuildEventType::kCompiler || ev.type == BuildEventType::kFrontend || ev.type == BuildEventType::kBackend || ev.type == BuildEventType::kOptModule)
             if (ev.detailIndex != DetailIndex())
                 return ev.detailIndex;
         eventIndex = ev.parent;
@@ -160,6 +162,7 @@ void Analysis::ProcessEvent(EventIndex eventIndex)
         auto& e = instantiations[eventIndex];
         ++e.count;
         e.us += event.dur;
+        e.file = event.filenameDetailIndex;
     }
 
     if (event.type == BuildEventType::kFrontend)
@@ -305,6 +308,11 @@ void Analysis::EmitCollapsedInfo(
         int ms = int(elt.second.us / 1000);
         int avg = int(ms / elt.second.count);
         fprintf(out, "%s%6i%s ms: %s (%i times, avg %i ms)\n", col::kBold, ms, col::kReset, dname.c_str(), elt.second.count, avg);
+
+        for (const auto& t : elt.second.templateCount)
+        {
+            fprintf(out, "  %s%6i%s time(s): %s\n", col::kBold, t.second, col::kReset, GetBuildName(DetailIndex{t.first}).data());
+        }
     }
     fprintf(out, "\n");
 }
@@ -336,6 +344,7 @@ void Analysis::EmitCollapsedTemplates()
         {
             stats.us += inst.second.us;
             stats.count += inst.second.count;
+            stats.templateCount[inst.second.file.idx] += 1;
         }
     }
     EmitCollapsedInfo(collapsed, "Template sets that took longest to instantiate");
@@ -423,6 +432,7 @@ void Analysis::EndAnalysis()
             instArray[d.idx].first = d;
             instArray[d.idx].second.us += inst.second.us;
             instArray[d.idx].second.count += inst.second.count;
+            instArray[d.idx].second.templateCount[inst.second.file.idx] += 1;
         }
         size_t n = std::min<size_t>(config.templateCount, instArray.size());
         auto cmp = [&](const auto&a, const auto &b) {
@@ -441,6 +451,11 @@ void Analysis::EndAnalysis()
             int ms = int(e.second.us / 1000);
             int avg = int(ms / std::max(e.second.count,1));
             fprintf(out, "%s%6i%s ms: %s (%i times, avg %i ms)\n", col::kBold, ms, col::kReset, dname.c_str(), e.second.count, avg);
+
+            for (const auto& t : e.second.templateCount)
+            {
+                fprintf(out, "  %s%6i%s time(s): %s\n", col::kBold, t.second, col::kReset, GetBuildName(DetailIndex{t.first}).data());
+            }
         }
         fprintf(out, "\n");
 
