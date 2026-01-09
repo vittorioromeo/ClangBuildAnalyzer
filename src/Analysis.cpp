@@ -307,7 +307,7 @@ void Analysis::PrintSortedTemplateCounts(const InstantiateEntry& e)
         return a.first < b.first;
     });
 
-    for (const auto& t : e.templateCount)
+    for (const auto& t : templateCounts)
     {
         fprintf(out, "  %s%6i%s time(s): %s\n", col::kBold, t.second, col::kReset, GetBuildName(DetailIndex{t.first}).data());
     }
