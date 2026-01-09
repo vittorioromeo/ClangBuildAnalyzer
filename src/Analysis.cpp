@@ -1,7 +1,6 @@
 // Clang Build Analyzer https://github.com/aras-p/ClangBuildAnalyzer
 // SPDX-License-Identifier: Unlicense
 
-#include <iostream>
 #ifdef _MSC_VER
 struct IUnknown; // workaround for old Win SDK header failures when using /permissive-
 #endif
@@ -117,6 +116,8 @@ struct Analysis
     void EmitCollapsedInfo(
         const ska::bytell_hash_map<std::string_view, InstantiateEntry> &collapsed,
         const char *header_string);
+
+    void PrintSortedTemplateCounts(const InstantiateEntry& e);
 
     // key is (name,objfile), value is milliseconds
     typedef std::pair<DetailIndex, DetailIndex> IndexPair;
@@ -285,6 +286,33 @@ std::string_view Analysis::GetCollapsedName(DetailIndex detail)
     return name;
 }
 
+void Analysis::PrintSortedTemplateCounts(const InstantiateEntry& e)
+{
+    std::vector<std::pair<int, int>> templateCounts;
+    templateCounts.reserve(e.templateCount.size());
+
+    for (const auto& t : e.templateCount)
+    {
+        if (t.second < 3) // TODO: make customizable
+            continue;
+
+        templateCounts.emplace_back(t.first, t.second);
+    }
+
+    std::sort(templateCounts.begin(), templateCounts.end(), [](const auto& a, const auto& b)
+    {
+        if (a.second != b.second)
+            return a.second > b.second;
+
+        return a.first < b.first;
+    });
+
+    for (const auto& t : e.templateCount)
+    {
+        fprintf(out, "  %s%6i%s time(s): %s\n", col::kBold, t.second, col::kReset, GetBuildName(DetailIndex{t.first}).data());
+    }
+}
+
 void Analysis::EmitCollapsedInfo(
     const ska::bytell_hash_map<std::string_view, InstantiateEntry> &collapsed,
     const char *header_string)
@@ -309,10 +337,7 @@ void Analysis::EmitCollapsedInfo(
         int avg = int(ms / elt.second.count);
         fprintf(out, "%s%6i%s ms: %s (%i times, avg %i ms)\n", col::kBold, ms, col::kReset, dname.c_str(), elt.second.count, avg);
 
-        for (const auto& t : elt.second.templateCount)
-        {
-            fprintf(out, "  %s%6i%s time(s): %s\n", col::kBold, t.second, col::kReset, GetBuildName(DetailIndex{t.first}).data());
-        }
+        PrintSortedTemplateCounts(elt.second);
     }
     fprintf(out, "\n");
 }
@@ -452,10 +477,7 @@ void Analysis::EndAnalysis()
             int avg = int(ms / std::max(e.second.count,1));
             fprintf(out, "%s%6i%s ms: %s (%i times, avg %i ms)\n", col::kBold, ms, col::kReset, dname.c_str(), e.second.count, avg);
 
-            for (const auto& t : e.second.templateCount)
-            {
-                fprintf(out, "  %s%6i%s time(s): %s\n", col::kBold, t.second, col::kReset, GetBuildName(DetailIndex{t.first}).data());
-            }
+            PrintSortedTemplateCounts(e.second);
         }
         fprintf(out, "\n");
 
