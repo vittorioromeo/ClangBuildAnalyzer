@@ -21,16 +21,16 @@ struct IUnknown; // workaround for old Win SDK header failures when using /permi
 
 struct Config
 {
-    int fileParseCount = 10;
-    int fileCodegenCount = 10;
-    int templateCount = 30;
+    int fileParseCount = 20;
+    int fileCodegenCount = 20;
+    int templateCount = 50;
     int functionCount = 30;
-    int headerCount = 10;
-    int headerChainCount = 5;
+    int headerCount = 20;
+    int headerChainCount = 10;
 
     int minFileTime = 10;
 
-    int maxName = 70;
+    int maxName = 512;
 
     bool onlyRootHeaders = true;
 };
@@ -111,7 +111,7 @@ struct Analysis
 
     ska::bytell_hash_map<DetailIndex, std::string_view> collapsedNames;
     std::string_view GetCollapsedName(DetailIndex idx);
-    void EmitCollapsedTemplates();
+    void EmitCollapsedTemplates();5
     void EmitCollapsedTemplateOpt();
     void EmitCollapsedInfo(
         const ska::bytell_hash_map<std::string_view, InstantiateEntry> &collapsed,
