@@ -111,7 +111,7 @@ struct Analysis
 
     ska::bytell_hash_map<DetailIndex, std::string_view> collapsedNames;
     std::string_view GetCollapsedName(DetailIndex idx);
-    void EmitCollapsedTemplates();5
+    void EmitCollapsedTemplates();
     void EmitCollapsedTemplateOpt();
     void EmitCollapsedInfo(
         const ska::bytell_hash_map<std::string_view, InstantiateEntry> &collapsed,
